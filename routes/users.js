@@ -31,4 +31,11 @@ Router.delete("/:id", isLoggedIn,  catchAsync(users.deleteUsers));
 // Get matchmaking results for a user
 Router.get("/:id/matches", isLoggedIn, catchAsync(users.getMatches));
 
+// // GET /users/:id/chat
+// Router.get("/:id/chat", (req, res) => {
+//   const { id } = req.params;
+//   // Render a chat page or return a placeholder
+//   res.render("chat/chat", { userId: id });
+// });
+
 module.exports = Router;

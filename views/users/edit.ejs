@@ -2,52 +2,44 @@
 <div class="row">
     <h1 class="text-center">Edit User</h1>
     <div class="col-6 offset-3">
-        <form action="/users/<%= user._id %>?_method=PUT" method="POST" novalidate class="validated-form" enctype="multipart/form-data">
-            <input type="hidden" name="_method" value="PUT">  <!-- Fix PUT issue -->
-
+        <form action="/users/<%= user._id %>?_method=PUT" method="post" novalidate class="validated-form" enctype="multipart/form-data">
             <div class="mb-3">
-                <label class="form-label" for="name">Full Name</label>
-                <input class="form-control" type="text" id="name" name="user[fullName]" value="<%= user.fullName %>" required>
+                <label class = "form-label" for="name">Full Name</label>
+                <input class="form-control" type="text" id="name" name="user[fullName]" value="<%= user.fullName %>" required> <!-- Use 'fullName' -->
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
             <div class="mb-3">
-                <label class="form-label" for="email">Email Address</label>
+                <label class = "form-label" for="email">Email Address</label>
                 <input class="form-control" type="email" id="email" name="user[email]" value="<%= user.email %>" required>
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
             <div class="mb-3">
                 <label class="form-label" for="hobbies">Favourite Hobby</label>
-                <input class="form-control" type="text" id="hobbies" name="user[hobbies]" value="<%= user.hobbies ? user.hobbies[0] : '' %>" required>  <!-- Fix empty array error -->
+                <input class="form-control" type="text" id="hobbies" name="user[hobbies]" value="<%= user.hobbies[0] %>" required> <!-- Use 'hobbies' -->
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
             <div class="mb-3">
-                <label class="form-label" for="location">Location</label>
+                <label class = "form-label" for="location">Location</label>
                 <input class="form-control" type="text" id="location" name="user[location]" value="<%= user.location %>" required>
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
             <div class="mb-3">
-                <label class="form-label" for="image">Profile Image</label>
+                <label class = "form-label" for="image">Profile Image URL</label>
                 <input type="file" name="image" id="image" multiple>
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
             <div class="mb-3">
-                <label class="form-label" for="description">Description</label>
-                <textarea class="form-control" type="text" id="description" name="user[description]" required><%= user.description || '' %></textarea>
+                <label class = "form-label" for="description">Description</label>
+                <textarea class="form-control" type="text" id="description" name="user[description]" required><%= user.description %></textarea>
                 <div class="valid-feedback">Looks Good!!</div>
             </div>
-
-            <div class="mb-3">
-                <button class="btn btn-info">Update User</button>
-            </div>
+            <div class="mb-3"><button class="btn btn-info">New Mee!!</button></div>
         </form>
-
         <footer>
             <a href="/users/<%= user._id %>">Back To User!!</a>
         </footer> 
     </div>
 </div>
+
+
+    

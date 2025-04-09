@@ -1,0 +1,110 @@
+<% layout('layouts/boilerplate') %>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<style>
+  #chat-container {
+    max-width: 600px;
+    margin: 2rem auto;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    height: 500px;
+  }
+
+  #messages {
+    flex: 1;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  .message {
+    padding: 10px 15px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+    max-width: 70%;
+    word-wrap: break-word;
+  }
+
+  .sent {
+    background-color: #d1e7dd;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .received {
+    background-color: #f8d7da;
+    align-self: flex-start;
+    text-align: left;
+  }
+
+  #input-container {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  #messageInput {
+    flex: 1;
+  }
+</style>
+
+<div id="chat-container">
+  <div id="messages">
+    <% for (let msg of messages) { %>
+      <div class="message <%= msg.from.toString() === currentUserId.toString() ? 'sent' : 'received' %>">
+        <%= msg.text %>
+      </div>
+    <% } %>
+  </div>
+  
+  <div id="input-container">
+    <input id="messageInput" type="text" class="form-control" placeholder="Type a message..." />
+    <button id="sendBtn" class="btn btn-primary">Send</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  const socket = io();
+  const currentUserId = "<%= currentUserId %>";
+  const chatPartnerId = "<%= chatPartnerId %>";
+
+  const messagesDiv = document.getElementById('messages');
+  const messageInput = document.getElementById('messageInput');
+  const sendBtn = document.getElementById('sendBtn');
+
+  socket.emit("register", { userId: currentUserId });
+
+  const addMessage = (text, isSentByCurrentUser) => {
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
+    msgDiv.textContent = text;
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  };
+
+  // Receive messages
+  socket.on("chatMessage", (data) => {
+    const isFromCurrentUser = data.from === currentUserId;
+    addMessage(data.text, isFromCurrentUser);
+  });
+
+  sendBtn.addEventListener("click", () => {
+    const msg = messageInput.value.trim();
+    if (!msg) return;
+
+    socket.emit("chatMessage", {
+      to: chatPartnerId,
+      text: msg,
+    });
+
+    messageInput.value = "";
+  });
+
+  // Allow Enter to send message
+  messageInput.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") sendBtn.click();
+  });
+</script>

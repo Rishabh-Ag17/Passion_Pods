@@ -1,4 +1,5 @@
 const User = require("../models/user.js");
+const Message = require('../models/messages');
 
 async function stableMatching(users) {
     // Filter users who have at least one hobby
@@ -202,5 +203,29 @@ module.exports = {
             next(err);
         }
     },
+    chat: async (req, res) => {
+        const { userId } = req.params;
+        const currentUserId = req.user._id;
+      
+        if (!req.user) {
+          req.flash('error', "You must be logged in to chat.");
+          return res.redirect('/login');
+        }
+      
+        // Get message history between current user and chat partner
+        const messages = await Message.find({
+          $or: [
+            { from: currentUserId, to: userId },
+            { from: userId, to: currentUserId }
+          ]
+        }).sort({ timestamp: 1 });
+      
+        res.render('chat/chat', {
+          chatPartnerId: userId,
+          currentUserId,
+          messages
+        });
+    },
+       
     
 };

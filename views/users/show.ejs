@@ -50,7 +50,12 @@
                     <button id="getMatchBtn" class="card-link btn btn-warning">Get Your Match!!</button>
                 </div>
                 <% } %>
-                <a href="/users" class="card-link btn btn-success">All Users</a>
+                <% if (currentUser && currentUser._id !== user._id) { %>
+                    <a href="/chat/<%= user._id %>" class="btn btn-primary">
+                      Chat with <%= user.username %>
+                    </a>
+                  <% } %>
+                <a href="/users" class="card-link btn btn-success mt-1">All Users</a>
             </div>
         </div>
 

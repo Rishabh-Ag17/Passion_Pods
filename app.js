@@ -13,10 +13,16 @@ const methodOverride = require("method-override");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const Profile = require("./models/profile.js");
+const http = require('http');
+const server = http.createServer(app);
+const { Server } = require('socket.io');
+const io = new Server(server);
+require('./utils/socket')(io); 
 
 const profileRoutes = require("./routes/profile.js");
 const usersRoutes = require("./routes/users.js");
 const reviewsRoutes = require("./routes/review.js");
+const chatRoutes = require('./routes/chat.js');
 
 mongoose
     .connect(process.env.MONGO_URL)
@@ -60,6 +66,7 @@ app.use((req, res, next) => {
 app.use('/', profileRoutes);
 app.use('/users',usersRoutes);
 app.use('/users/:id/reviews',reviewsRoutes);
+app.use('/chat', chatRoutes);
 
 // Home Route
 app.get("/", (req, res) => {
@@ -77,6 +84,13 @@ app.use((err, req, res, next) => {
     res.status(statusCode).render('error', {err}); 
 })
 
-app.listen(5000, () => {
-    console.log("Serving on PORT 5000!");
+const port = process.env.PORT || 5000;
+server.listen(port, () => {
+  console.log(`Server running on port ${port}!`);
 });
+
+// app.listen(5000, () => {
+//     console.log("Serving on PORT 5000!");
+// });
+
+module.exports = { app, server, io };
