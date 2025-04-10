@@ -2,7 +2,7 @@ const Redis = require('ioredis');
 const redis = new Redis();      // Publisher
 const redisSubscriber = new Redis(); // Subscriber
 const Message = require('../models/messages');
-
+const CryptoJS = require('crypto-js'); // <-- Add this line to import CryptoJS
 
 // In-memory user-to-socket map
 const userSocketMap = new Map();
@@ -24,7 +24,6 @@ module.exports = (io) => {
       }
     }
   });
-  
 
   io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
@@ -45,24 +44,27 @@ module.exports = (io) => {
     
       const payload = {
         from: fromUserId,
-        to: data.to,
-        text: data.text,
+        to: data.to,    // Ensure that `data.to` is available
+        text: data.text, // Ensure that `data.text` is available
       };
-    
-      // Store message in DB
+
+      // Encrypt the message before storing it
+      const derivedKey = `${[fromUserId, data.to].sort().join("_")}_secretkey`; // Derived key based on user ids
+      const encryptedText = CryptoJS.AES.encrypt(data.text, derivedKey).toString(); // Encrypt the message
+
+      // Store message in DB with encrypted text
       try {
-        await Message.create(payload);
+        await Message.create({ ...payload, text: encryptedText });
       } catch (e) {
         console.error('Failed to store message:', e);
       }
     
       // Echo to sender
-      socket.emit('chatMessage', payload);
+      socket.emit('chatMessage', { ...payload, text: encryptedText });
     
       // Publish for Redis broadcast
       redis.publish('chatChannel', JSON.stringify(payload));
     });
-    
 
     socket.on('disconnect', () => {
       for (const [userId, sockId] of userSocketMap.entries()) {

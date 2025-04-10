@@ -1,6 +1,8 @@
 <% layout('layouts/boilerplate') %>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/crypto-js@4.1.1/crypto-js.min.js"></script>
+
 <style>
   #chat-container {
     max-width: 600px;
@@ -54,7 +56,7 @@
   <div id="messages">
     <% for (let msg of messages) { %>
       <div class="message <%= msg.from.toString() === currentUserId.toString() ? 'sent' : 'received' %>">
-        <%= msg.text %>
+        <%= msg.text %> <!-- Decrypted message directly here -->
       </div>
     <% } %>
   </div>
@@ -75,35 +77,54 @@
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendBtn');
 
+  // Shared auto-generated encryption key
+  const derivedKey = `${[currentUserId, chatPartnerId].sort().join("_")}_secretkey`;
+
   socket.emit("register", { userId: currentUserId });
 
-  const addMessage = (text, isSentByCurrentUser) => {
-    const msgDiv = document.createElement("div");
-    msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
-    msgDiv.textContent = text;
-    messagesDiv.appendChild(msgDiv);
-    messagesDiv.scrollTop = messagesDiv.scrollHeight;
-  };
-
-  // Receive messages
   socket.on("chatMessage", (data) => {
     const isFromCurrentUser = data.from === currentUserId;
     addMessage(data.text, isFromCurrentUser);
   });
 
+  const addMessage = (cipherText, isSentByCurrentUser) => {
+    // Decrypt the message before displaying it
+    const plainText = decryptMessage(cipherText, derivedKey);
+    const msgDiv = document.createElement("div");
+    msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
+    msgDiv.textContent = plainText;  // Decrypted message here
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  };
+
+  // Decrypt message function (for incoming messages)
+  const decryptMessage = (cipherText, key) => {
+    try {
+      const bytes = CryptoJS.AES.decrypt(cipherText, key);
+      return bytes.toString(CryptoJS.enc.Utf8) || "[Decryption Failed]";
+    } catch (e) {
+      console.error("Decryption error:", e);
+      return "[Invalid Cipher]";
+    }
+  };
+
+
   sendBtn.addEventListener("click", () => {
     const msg = messageInput.value.trim();
     if (!msg) return;
 
+    // Encrypt the message before sending it
+    const encryptedText = CryptoJS.AES.encrypt(msg, derivedKey).toString();
+
     socket.emit("chatMessage", {
       to: chatPartnerId,
-      text: msg,
+      text: encryptedText,
     });
 
     messageInput.value = "";
   });
 
-  // Allow Enter to send message
+
   messageInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") sendBtn.click();
   });
