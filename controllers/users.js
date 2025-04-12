@@ -1,5 +1,7 @@
 const User = require("../models/user.js");
 const Message = require('../models/messages');
+const maptilerClient = require("@maptiler/client");
+maptilerClient.config.apiKey = process.env.MAPTILER_API_KEY;
 
 async function stableMatching(users) {
     // Filter users who have at least one hobby
@@ -69,21 +71,35 @@ module.exports = {
 
     createUser: async (req, res, next) => {
         const { user } = req.body;
-        // if (user.profileImageURL && user.profileImageURL.trim() !== "" && !isValidUrl(user.profileImageURL)) {
-        //     throw new ExpressError("Invalid image URL provided", 400);
-        // }
+    
+        // Fix the geocoding line to use correct path
+        const geoData = await maptilerClient.geocoding.forward(user.location, { limit: 1 });
+        console.log(user.location);
         // Convert hobbies from comma-separated string to an array
         if (user.hobbies && typeof user.hobbies === 'string') {
             user.hobbies = user.hobbies.split(',').map(hobby => hobby.trim());
         }
+    
         const newUser = new User(user);
-        newUser.profileImageURL = req.files.map(f => ({url: f.path, filename: f.filename}));
+    
+        // Assign geometry only if geocoding result exists
+        if (geoData && geoData.features && geoData.features.length > 0) {
+            newUser.geometry = geoData.features[0].geometry;
+        } else {
+            newUser.geometry = {
+                type: "Point",
+                coordinates: []
+            };
+        }
+    
+        newUser.profileImageURL = req.files.map(f => ({ url: f.path, filename: f.filename }));
         newUser.author = req.user._id;
+    
         await newUser.save();
-        // console.log(newUser);
+    
         req.flash('success', "Successfully added a new user!!");
         res.redirect(`/users/${newUser._id}`);
-    },
+    },    
 
     showUsers: async (req, res) => {
         const user = await User.findById(req.params.id).populate({path: 'reviews', populate: {path: 'author'}}).populate('author');
@@ -91,7 +107,7 @@ module.exports = {
             req.flash('error', "Cannot find the user!!");
             return res.redirect('/users');
         }
-        res.render("users/show", { user });
+        res.render("users/show", { user, maptilerApiKey: process.env.MAPTILER_API_KEY });
     },
 
     renderEditForm: async (req, res) => {
@@ -146,7 +162,9 @@ module.exports = {
         
         // Update non-file fields and return the updated document
         const updatedUser = await User.findByIdAndUpdate(id, { ...user }, { new: true });
-        
+        const geoData = await maptilerClient.geocoding.forward(req.body.users.location, { limit: 1 });
+        updatedUser.geometry = geoData.features[0].geometry;
+        await updatedUser.save();
         // Only process image uploads if files are present
         if (req.files && req.files.length > 0) {
             const imgs = req.files.map(f => ({ url: f.path, filename: f.filename }));

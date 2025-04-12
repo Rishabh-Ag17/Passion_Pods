@@ -1,5 +1,9 @@
 <% layout('layouts/boilerplate') %>
 <link rel="stylesheet" href="/stylesheets/stars.css">
+<link href="https://cdn.maptiler.com/maptiler-sdk-js/v1.1.2/maptiler-sdk.css" rel="stylesheet">
+<script src="https://cdn.maptiler.com/maptiler-sdk-js/v1.1.2/maptiler-sdk.umd.min.js"></script>
+
+
 <div class="container">
     <div class="row gx-4">
         <div class="col-md-6">
@@ -60,6 +64,9 @@
         </div>
 
         <div class="col-md-6">
+            <div class="card mb-3">
+                <div id="map" style="height: 300px; border-radius: 10px;"></div>
+            </div>            
           <% if(currentUser){ %>
             <h2>Leave a Review</h2>
             <form action="/users/<%= user._id %>/reviews" method="POST" class="mb-3 validated-form" novalidate>
@@ -113,7 +120,8 @@
 </div>
 
 
-<script>
+
+<script>    
     document.getElementById("getMatchBtn").addEventListener("click", async function() {
         try {
             const userId = "<%= user._id %>";  // Current user's ID
@@ -131,3 +139,10 @@
         }
     });
 </script>
+
+<script>
+    const maptilerApiKey = "<%= maptilerApiKey %>";
+    const user = JSON.parse('<%- JSON.stringify(user) %>');
+    console.log(user);
+</script>
+<script src="/javascripts/showPageMap.js"></script>

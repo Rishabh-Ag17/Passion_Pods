@@ -100,8 +100,7 @@
 
   const showMessage = (msg) => {
     const msgDiv = document.createElement("div");
-    console.log(msg);
-    console.log("Working!!");
+    // console.log(msg);
     const isSentByCurrentUser = true;
     msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
     msgDiv.textContent = msg; 
@@ -124,7 +123,7 @@
   sendBtn.addEventListener("click", () => {
     const msg = messageInput.value.trim();
     if (!msg) return;
-    console.log(msg);
+    // console.log(msg);
     // Encrypt the message before sending it
     const encryptedText = CryptoJS.AES.encrypt(msg, key).toString();
     showMessage(msg);
