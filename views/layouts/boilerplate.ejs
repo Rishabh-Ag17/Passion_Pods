@@ -12,7 +12,12 @@
 </head>
 <body class="d-flex flex-column vh-100">
     <%- include("../partials/Navbar")  %>
-    <main class="container mt-5">
+    <% if (typeof isIndexPage !== 'undefined' && isIndexPage) { %>
+        <div class="w-100 mb-3" style="margin: 0; padding: 0;">
+            <div id="map" style="width: 100vw; height: 350px;"></div>
+        </div>
+    <% } %>
+    <main class="container <%= typeof noNavbarMargin !== 'undefined' && noNavbarMargin ? 'mt-1' : 'mt-5' %>">
         <%- include("../partials/flash")  %>
         <%- body  %>
     </main>

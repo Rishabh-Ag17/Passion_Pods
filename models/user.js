@@ -10,6 +10,11 @@ const ImgSchema = new Schema({
 ImgSchema.virtual('thumbnail').get(function () {
     return this.url ? this.url.replace('/upload', '/upload/w_200') : '';
 });
+const opts = { 
+    toJSON: { virtuals: true }, 
+    toObject: { virtuals: true }, 
+    timestamps: true 
+};
 const userSchema = new Schema({
     fullName: {
         type: String,
@@ -52,8 +57,12 @@ const userSchema = new Schema({
             required: true
         }
     },
-}, { timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } }); 
-
+}, opts); 
+userSchema.virtual('properties.popUpMarkup').get(function () {
+    return `
+    <strong><a href="/campgrounds/${this._id}">${this.title}</a><strong>
+    <p>${this.description.substring(0, 20)}...</p>`
+});
 userSchema.post('findOneAndDelete', async function (doc) {
     if (doc) {
         await Review.deleteMany({

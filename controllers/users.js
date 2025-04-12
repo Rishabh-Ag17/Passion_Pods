@@ -74,7 +74,7 @@ module.exports = {
     
         // Fix the geocoding line to use correct path
         const geoData = await maptilerClient.geocoding.forward(user.location, { limit: 1 });
-        console.log(user.location);
+        // console.log(user.location);
         // Convert hobbies from comma-separated string to an array
         if (user.hobbies && typeof user.hobbies === 'string') {
             user.hobbies = user.hobbies.split(',').map(hobby => hobby.trim());
