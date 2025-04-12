@@ -72,7 +72,7 @@
   const socket = io();
   const currentUserId = "<%= currentUserId %>";
   const chatPartnerId = "<%= chatPartnerId %>";
-
+  const key = "aaa";
   const messagesDiv = document.getElementById('messages');
   const messageInput = document.getElementById('messageInput');
   const sendBtn = document.getElementById('sendBtn');
@@ -84,15 +84,27 @@
 
   socket.on("chatMessage", (data) => {
     const isFromCurrentUser = data.from === currentUserId;
-    addMessage(data.text, isFromCurrentUser);
+    // addMessage(data.text, isFromCurrentUser);
   });
 
   const addMessage = (cipherText, isSentByCurrentUser) => {
     // Decrypt the message before displaying it
     const plainText = decryptMessage(cipherText, derivedKey);
+    console.log(plainText);
     const msgDiv = document.createElement("div");
     msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
     msgDiv.textContent = plainText;  // Decrypted message here
+    messagesDiv.appendChild(msgDiv);
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+  };
+
+  const showMessage = (msg) => {
+    const msgDiv = document.createElement("div");
+    console.log(msg);
+    console.log("Working!!");
+    const isSentByCurrentUser = true;
+    msgDiv.classList.add("message", isSentByCurrentUser ? "sent" : "received");
+    msgDiv.textContent = msg; 
     messagesDiv.appendChild(msgDiv);
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   };
@@ -112,10 +124,10 @@
   sendBtn.addEventListener("click", () => {
     const msg = messageInput.value.trim();
     if (!msg) return;
-
+    console.log(msg);
     // Encrypt the message before sending it
-    const encryptedText = CryptoJS.AES.encrypt(msg, derivedKey).toString();
-
+    const encryptedText = CryptoJS.AES.encrypt(msg, key).toString();
+    showMessage(msg);
     socket.emit("chatMessage", {
       to: chatPartnerId,
       text: encryptedText,

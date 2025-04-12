@@ -219,7 +219,10 @@ module.exports = {
             { from: userId, to: currentUserId }
           ]
         }).sort({ timestamp: 1 });
-      
+        console.log(messages.length);
+        console.log("hi");
+        console.log(currentUserId);
+        console.log(userId);
         res.render('chat/chat', {
           chatPartnerId: userId,
           currentUserId,
